@@ -1,0 +1,25 @@
+html, body, .window {
+    width: 650px;
+    height: 500px
+  }
+  body {
+    margin: 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    display: flex;
+  }
+  .titlebar {
+    border-radius: 5px 5px 0 0;
+    -webkit-app-region: drag;
+    box-sizing: content-box;
+  }
+  .window {
+    border-radius: 5px;
+    flex: 1 1 auto;
+    flex-direction: column;
+    display: flex;
+  }
+  .container {
+    border-radius: 0 0 5px 5px;
+    background-color: #eee;
+  }
