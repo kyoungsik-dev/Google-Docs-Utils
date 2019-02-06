@@ -13,20 +13,51 @@
       <div class="header">
 
       </div>
-      <div class="container">
-        Hello
-        <div class="form-group">
-          <label class="form-label" for="input-example-3">Message</label>
-          <textarea class="form-input" id="input-example-3" placeholder="Textarea" rows="3"></textarea>
+      <div class="title bg-dark text-secondary">
+        <div class="h3">AppleCare+ Helper</div>
+        <div class="h6">for UDID.kr</div>
+      </div>
+      <div class="container bg-primary">
+        <div class="card text-dark contents">
+          <div class="card-header">
+            <ul class="step">
+              <li class="step-item active">
+                <a href="#" class="tooltip" data-tooltip="클립보드 가져오기">Step 1</a>
+              </li>
+              <li class="step-item">
+                <a href="#" class="tooltip" data-tooltip="데이터 확인">Step 2</a>
+              </li>
+              <li class="step-item">
+                <a href="#" class="tooltip" data-tooltip="구글에 전송">Step 3</a>
+              </li>
+            </ul>
+          </div>
+          <div class="card-body">
+            <div id="step1">
+              <div id="bodyLabel" class="h5 text-center text-bold">텍스트 입력</div>
+              <button id="getClipboard" class="btn btn-lg btn-primary">클립보드 가져오기</button>
+            </div>
+            <div id="step2" style="display: none">
+              <div id="textViewer">
+                abc
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+          </div>
         </div>
       </div>
     </div>
     <script>
       // You can also require other files to run in this process
-      const {remote} = require('electron');
+      const {remote, clipboard} = require('electron');
       const {BrowserWindow} = remote;
       const titlebar = require('titlebar');
       const current = BrowserWindow.getFocusedWindow();
+
+      let currentStep = 1;
+      let rawText = '';
+      let parsedText = {};
 
       var t = titlebar();
       console.log(t);
@@ -43,6 +74,85 @@
 
       // t.element exposes the root dom element
       t.element.appendChild(document.createElement('div'));
+
+      //클립보드 가져오기
+      const getClipboardBtn = document.getElementById('getClipboard');
+      getClipboardBtn.addEventListener('click', ()=> {
+        rawText = clipboard.readText();
+        parseText(rawText);
+      });
+      
+      //텍스트 파싱
+      function parseText(data) {
+
+        // 이름 가져오기
+        const nameReg = /[가-힣]{3}/;
+        parsedText.name = nameReg.exec(data)[0];
+        data = data.replace(nameReg, '');
+
+        // 전화번호 가져오기
+        const phoneReg = /01\d[\s-]{0,1}\d{3,4}[\s-]{0,1}\d{4}/;
+        parsedText.phone = phoneReg.exec(data)[0];
+        data = data.replace(phoneReg, '');
+
+        // 이메일 가져오기
+        const emailReg = /[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}/
+        parsedText.email = emailReg.exec(data)[0];
+        data = data.replace(emailReg, '');
+
+        // 기기명 가져오기
+        const deviceList = [
+          {type: '아이폰', keyword: ['아이폰', 'iphone'], list: [
+            {name: '아이폰XS Max', keyword: ['Max', '맥스']},
+            {name: '아이폰XS', keyword: ['xs']},
+            {name: '아이폰X', keyword: ['x']},
+            {name: '아이폰XR', keyword: ['xr']},
+            {name: '아이폰8 플러스', keyword: ['8 플러스']},
+            {name: '아이폰8', keyword: ['8']},
+            {name: '아이폰7 플러스', keyword: ['7 플러스']},
+            {name: '아이폰7', keyword: ['7']},
+            {name: '아이폰SE', keyword: ['se']}
+          ]},
+          {type: '아이패드', keyword: ['패드', 'ipad'], list: [
+            {name: '아이패드 프로', keyword: ['프로']},
+            {name: '아이패드 9.7', keyword: ['']}
+          ]},
+          {type: '애플워치', keyword: ['워치', 'watch'], list: [
+            {name: '애플워치 에르메스', keyword: ['에르메스']},
+            {name: '애플워치 시리즈3', keyword: ['3']},
+            {name: '애플워치 시리즈4', keyword: ['4']}
+          ]},
+          {type: '맥북', keyword: ['맥북', 'macbook'], list: [
+            {name: '맥북프로 13인치', keyword: ['13']},
+            {name: '맥북프로 15인치', keyword: ['15']},
+            {name: '맥북, 맥북에어', keyword: ['']}
+          ]}
+        ];
+        let device = '';
+        let deviceTypeNum = -1;
+        
+        // 1. 기기 분류
+        for (let i=0; i<deviceList.length; i++) {
+          if (data.indexOf(deviceList[i].keyword) > -1) {
+            device = deviceList[i].type;
+            deviceTypeNum = i;
+            break;
+          }
+        }
+
+        // 2. 세부명 확인
+        for (let i=0; i<deviceList[deviceTypeNum].list.length; i++) {
+          if (data.ind)
+        }
+
+
+        parsedText.device = device;
+
+        console.log(parsedText);
+        // 출력
+        const textViewerDom = document.getElementById('textViewer');
+        textViewerDom.innerHTML = parsedText.name;
+      }
     </script>
   </body>
 </html>
