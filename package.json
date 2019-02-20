@@ -20,6 +20,7 @@
     "electron": "^4.0.3"
   },
   "dependencies": {
+    "googleapis": "^27.0.0",
     "titlebar": "^1.4.0"
   }
 }

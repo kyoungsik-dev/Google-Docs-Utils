@@ -21,26 +21,34 @@
         <div class="card text-dark contents">
           <div class="card-header">
             <ul class="step">
-              <li class="step-item active">
+              <li class="step-item active" id="step1">
                 <a href="#" class="tooltip" data-tooltip="클립보드 가져오기">Step 1</a>
               </li>
-              <li class="step-item">
+              <li class="step-item" id="step2">
                 <a href="#" class="tooltip" data-tooltip="데이터 확인">Step 2</a>
               </li>
-              <li class="step-item">
+              <li class="step-item" id="step3">
                 <a href="#" class="tooltip" data-tooltip="구글에 전송">Step 3</a>
               </li>
             </ul>
           </div>
           <div class="card-body">
-            <div id="step1">
+            <div id="step1body">
               <div id="bodyLabel" class="h5 text-center text-bold">텍스트 입력</div>
               <button id="getClipboard" class="btn btn-lg btn-primary">클립보드 가져오기</button>
             </div>
-            <div id="step2" style="display: none">
+            <div id="step2body" style="display: none">
               <div id="textViewer">
-                abc
+                <div id="name"></div>
+                <div id="phone"></div>
+                <div id="email"></div>
+                <div id="device"></div>
+                <div id="serial"></div>
               </div>
+              <button id="dataConfirm" class="btn btn-lg btn-primary">구글에 전송</button>
+            </div>
+            <div id="step3body" style="display: none">
+              입력완료!
             </div>
           </div>
           <div class="card-footer">
@@ -54,6 +62,16 @@
       const {BrowserWindow} = remote;
       const titlebar = require('titlebar');
       const current = BrowserWindow.getFocusedWindow();
+
+      const step1body = document.getElementById('step1body');
+      const step2body = document.getElementById('step2body');
+      const step3body = document.getElementById('step3body');
+      
+      const nameDom = document.getElementById('name');
+      const phoneDom = document.getElementById('phone');
+      const emailDom = document.getElementById('email');
+      const deviceDom = document.getElementById('device');
+      const serialDom = document.getElementById('serial');
 
       let currentStep = 1;
       let rawText = '';
@@ -80,78 +98,77 @@
       getClipboardBtn.addEventListener('click', ()=> {
         rawText = clipboard.readText();
         parseText(rawText);
+        step1body.style.display = 'none';
+        step2body.style.display = 'block';
+        step1.classList.remove('active');
+        step2.classList.add('active');
       });
       
       //텍스트 파싱
       function parseText(data) {
-
         // 이름 가져오기
         const nameReg = /[가-힣]{3}/;
-        parsedText.name = nameReg.exec(data)[0];
+        parsedText.name = nameReg.exec(data) && nameReg.exec(data)[0];
         data = data.replace(nameReg, '');
 
         // 전화번호 가져오기
         const phoneReg = /01\d[\s-]{0,1}\d{3,4}[\s-]{0,1}\d{4}/;
-        parsedText.phone = phoneReg.exec(data)[0];
+        parsedText.phone = phoneReg.exec(data) && phoneReg.exec(data)[0];
         data = data.replace(phoneReg, '');
 
         // 이메일 가져오기
         const emailReg = /[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}/
-        parsedText.email = emailReg.exec(data)[0];
+        parsedText.email = emailReg.exec(data) && emailReg.exec(data)[0];
         data = data.replace(emailReg, '');
 
         // 기기명 가져오기
-        const deviceList = [
-          {type: '아이폰', keyword: ['아이폰', 'iphone'], list: [
-            {name: '아이폰XS Max', keyword: ['Max', '맥스']},
-            {name: '아이폰XS', keyword: ['xs']},
-            {name: '아이폰X', keyword: ['x']},
-            {name: '아이폰XR', keyword: ['xr']},
-            {name: '아이폰8 플러스', keyword: ['8 플러스']},
-            {name: '아이폰8', keyword: ['8']},
-            {name: '아이폰7 플러스', keyword: ['7 플러스']},
-            {name: '아이폰7', keyword: ['7']},
-            {name: '아이폰SE', keyword: ['se']}
-          ]},
-          {type: '아이패드', keyword: ['패드', 'ipad'], list: [
-            {name: '아이패드 프로', keyword: ['프로']},
-            {name: '아이패드 9.7', keyword: ['']}
-          ]},
-          {type: '애플워치', keyword: ['워치', 'watch'], list: [
-            {name: '애플워치 에르메스', keyword: ['에르메스']},
-            {name: '애플워치 시리즈3', keyword: ['3']},
-            {name: '애플워치 시리즈4', keyword: ['4']}
-          ]},
-          {type: '맥북', keyword: ['맥북', 'macbook'], list: [
-            {name: '맥북프로 13인치', keyword: ['13']},
-            {name: '맥북프로 15인치', keyword: ['15']},
-            {name: '맥북, 맥북에어', keyword: ['']}
-          ]}
-        ];
-        let device = '';
-        let deviceTypeNum = -1;
+        parsedText.device = getDevice(data);
+
+        // 일련번호 가져오기
+        const serialReg = /[a-zA-Z][a-zA-Z0-9]{10,13}/;
+        parsedText.serial = serialReg.exec(data) && serialReg.exec(data)[0];
+        data = data.replace(serialReg, '');
         
-        // 1. 기기 분류
-        for (let i=0; i<deviceList.length; i++) {
-          if (data.indexOf(deviceList[i].keyword) > -1) {
-            device = deviceList[i].type;
-            deviceTypeNum = i;
-            break;
-          }
-        }
-
-        // 2. 세부명 확인
-        for (let i=0; i<deviceList[deviceTypeNum].list.length; i++) {
-          if (data.ind)
-        }
-
-
-        parsedText.device = device;
-
         console.log(parsedText);
         // 출력
-        const textViewerDom = document.getElementById('textViewer');
-        textViewerDom.innerHTML = parsedText.name;
+        nameDom.innerHTML = parsedText.name;
+        phoneDom.innerHTML = parsedText.phone;
+        emailDom.innerHTML = parsedText.email;
+        deviceDom.innerHTML = parsedText.device;
+        serialDom.innerHTML = parsedText.serial;
+      }
+      function getDevice(data) {
+        data = data.replace(/ /g,'');
+        data = data.toLowerCase();
+        const deviceList = [
+          {name: '아이폰XS Max', keyword: ['xsMax', 'xs맥스']},
+          {name: '아이폰XS', keyword: ['아이폰xs', 'iphonexs']},
+          {name: '아이폰XR', keyword: ['아이폰xr']},
+          {name: '아이폰X', keyword: ['아이폰x']},
+          {name: '아이폰8 플러스', keyword: ['아이폰8플러스', '아이폰8+', 'iphone8plus']},
+          {name: '아이폰8', keyword: ['아이폰8', 'iphone8']},
+          {name: '아이폰7 플러스', keyword: ['아이폰7플러스', '아이폰7+', 'iphone7plus']},
+          {name: '아이폰7', keyword: ['아이폰7', 'iphone7']},
+          {name: '아이폰SE', keyword: ['아이폰se', 'iphonese']},
+          {name: '아이패드 프로', keyword: ['아이패드프로', 'ipadpro']},
+          {name: '아이패드 9.7', keyword: ['아이패드', 'ipad']},
+          {name: '애플워치 에르메스', keyword: ['에르메스', 'hermes']},
+          {name: '애플워치 시리즈3', keyword: ['애플워치3', '애플워치시리즈3', 'watch3', 'series3']},
+          {name: '애플워치 시리즈4', keyword: ['애플워치4', '애플워치시리즈4', 'watch4', 'series4']},
+          {name: '맥북프로 13인치', keyword: ['맥북프로13', 'macbookpro13', '15인치']},
+          {name: '맥북프로 15인치', keyword: ['맥북프로15', 'macbookpro15', '13인치']},
+          {name: '맥북, 맥북에어', keyword: ['맥북', '맥북에어']}
+        ];
+        for (let i=0; i<deviceList.length; i++) {
+          const o = deviceList[i];
+          for (let j=0; j<o.keyword.length; j++) {
+            const text = o.keyword[j];
+            if (data.indexOf(text) > -1) {
+              return o.name;
+            }
+          }
+        }
+        return '';
       }
     </script>
   </body>
